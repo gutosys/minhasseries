@@ -4,16 +4,24 @@ import {Redirect} from 'react-router-dom';
 import {Badge} from 'reactstrap';
 
 const InfoSerie = ({match}) => {
-    const [name, setName] = useState('');
+    const [form, setForm] = useState({});
     const [success, setSuccess] = useState(false);
+    const [mode, setMode] = useState('INFO');
+    const [genres, setGenres] = useState([]);
 
     const [data,setData] = useState({})
     useEffect(() => {
         axios.get('/api/series/' + match.params.id)
         .then(res => {
             setData(res.data)
+            setForm(res.data)
         })
-    }, [match.params.id]);
+
+        axios.get('/api/genres/')
+        .then(res => {            
+            setGenres(res.data.data)
+        })
+    }, []);
 
     const masterHeader = {
         height: '50vh',
@@ -25,17 +33,22 @@ const InfoSerie = ({match}) => {
     }
 
     const save = ()  => {
-        axios.post('/api/series', {
-            name: name
+        axios.put('/api/series' + match.params.id, {
+            name: form.name
         }).then(res =>{
             console.log(res);
             setSuccess(true);
         })
     };
 
-    const onChange = evt => {
-        console.log(evt.target.value);
-        setName(evt.target.value);
+    const onChange = field => evt => {
+        // console.log(evt.target.value);
+        // setName(evt.target.value);
+
+        setForm({
+            ...form,
+            [field]: evt.target.value
+        })
     }
 
      if(success){
@@ -66,18 +79,40 @@ const InfoSerie = ({match}) => {
                 </div>
             </div>
         </header>
+        <div>
+            <button className='btn btn-primary' onClick={() => setMode('EDIT')}>Editar</button>
+        </div>
+        
+        {/* //Maneira de mostrar condicionalmente um conteúdo */}
+        {
+            mode === 'EDIT' &&
         <div className='container'>
             <h1>Nova Série</h1>
             <pre>{JSON.stringify(data)}</pre>
+            <button className='btn btn-primary' onClick={() => setMode('INFO')}>Cancelar Edição</button>
             <form>
                 <div className='form-group'>
                     <label htmlFor='name'>Nome</label>
-                    <input type='text' value={name} onChange={onChange} className='form-control' id='name' placeholder='Nome da Série' />
+                    <input type='text' value={form.name} onChange={onChange('name')} className='form-control' id='name' placeholder='Nome da Série' />
                 </div>
+
+                <div className='form-group'>
+                    <label htmlFor='comments'>Comentários</label>
+                    <input type='text' value={form.comments} onChange={onChange('comments')} className='form-control' id='comments' placeholder='Comentários' />
+                </div>
+
+                <div className='form-group'>
+                    <label htmlFor='genre'>Gênero</label>
+                    <select className="form-control" onChange={onChange('genre_id')}>
+                        { genres.map(genre => <option key={ genre.id } value={ genre.id} select={genre.id === form.genre}>{genre.name}</option>) }
+                    </select>
+                </div>
+       
 
                 <button type='button' onClick={save} className='btn btn-primary'>Salvar</button>
             </form>
         </div>
+        }   
 
         </div>
 
