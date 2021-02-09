@@ -16,12 +16,15 @@ const InfoSerie = ({match}) => {
             setData(res.data)
             setForm(res.data)
         })
+    }, [match.params.id]);
 
+    useEffect(() => {
         axios.get('/api/genres/')
         .then(res => {            
             setGenres(res.data.data)
+            
         })
-    }, []);
+    }, [data]);
 
     const masterHeader = {
         height: '50vh',
@@ -51,7 +54,14 @@ const InfoSerie = ({match}) => {
         })
     }
 
-     if(success){
+    const seleciona = value => () => {
+        setForm({
+            ...form,
+            status: value
+        })
+    }
+
+     if(success) {
         return <Redirect to='/series' />
     }
 
@@ -106,6 +116,19 @@ const InfoSerie = ({match}) => {
                     <select className="form-control" onChange={onChange('genre_id')}>
                         { genres.map(genre => <option key={ genre.id } value={ genre.id} select={genre.id === form.genre}>{genre.name}</option>) }
                     </select>
+                </div>
+
+                <div className="form-check">
+                    <input className="form-check-input" type="radio" name="status" id="assistido" value="ASSISTIDO"  onClick={seleciona('ASSISTIDO')} />
+                    <label className="form-check-label" htmlFor="assistido">
+                        Assistido
+                </label>
+                </div>
+                <div className="form-check">
+                    <input className="form-check-input" type="radio" name="status" id="paraAssistir" value="PARA_ASSISTIR" onClick={seleciona('PARA_ASSISTIR')} />
+                    <label className="form-check-label" htmlFor="paraAssistir">
+                        Para Assistir 
+                    </label>
                 </div>
        
 
